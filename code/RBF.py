@@ -5,11 +5,6 @@ def distance(x1,x2):
     X1 = np.sum(x1 * x1, axis=1)[:, None]
     X2 = np.sum(x2 * x2, axis=1)[None, :]
     return np.maximum(X1 + X2 - 2.0 * (x1 @ x2.T), 0.0)
- 
-
-def caculate_Dmax(d2):
-    Dmax = float(np.sqrt(d2.max()))
-    return Dmax
             
 
 # RBF => 擬合非線性問題
@@ -31,7 +26,7 @@ class RBF():
         d2 = distance(X, X)
         Dmax = float(np.sqrt(d2.max()))
         self.beta = max(Dmax * (d * N) ** (-1.0 / d), 1e-12)
-        Phi = self._phi(d2)
+        Phi = self.create_Phi(d2)
         self.w = np.linalg.solve(Phi + self.eps * np.eye(N), y)
         self.X = X
         return self
@@ -39,9 +34,13 @@ class RBF():
     def predict(self,X_query):
         assert self.w is not None, "call fit() first"
         Xq = np.atleast_2d(np.asarray(X_query, dtype=float))
-        pred = self._phi(self._sq_dists(Xq, self.X)) @ self.w
+        pred = self.create_Phi(distance(Xq, self.X)) @ self.w
         return pred[0] if np.asarray(X_query).ndim == 1 else pred
     
     #創建 matrix Phi 
     def create_Phi(self,d2):
         return np.exp(-d2 / self.beta)  
+    
+    def cubic(self,d2):
+        return d2 ** 1.5
+         
