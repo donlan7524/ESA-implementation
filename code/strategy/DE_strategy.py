@@ -18,18 +18,18 @@ class DE_Strategy(Strategy):
         對最好的子代進行真實環境運算
         '''
         #族群
-        P,_ = Strategy.top_k(DB,self.n)
+        P, _ = DB.get_nbest(self.n)
         n,d = P.shape
         
         #建立全域代理
         g = min(len(DB),self.g_max)
-        Xg,yg = Strategy.top_k(DB,g)
+        Xg, yg = DB.get_nbest(g)
         model = RBF().fit(Xg,yg)
         
         #產生突變及交配
         trials = self.gen_next(P)
         #確保解落在合法空間
-        trials = Strategy.clip(trials)
+        trials = self.clip(trials)
         
         #找出模擬分數最高子代
         pred = model.predict(trials)

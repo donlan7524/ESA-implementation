@@ -15,14 +15,6 @@ class Strategy():
     def strategy(self, DB, f):   
         #不應該出現     
         raise NotImplementedError
-
-    @staticmethod
-    def top_k(DB, k):
-        # 找出前k名優秀者
-        DB_sorted = sorted(DB, key=lambda data: data[1])[:k]
-        X = np.array([d[0] for d in DB_sorted], dtype=float)
-        y = np.array([d[1] for d in DB_sorted], dtype=float)
-        return X, y
  
     def clip(self, X):
         #將候選者拉回搜尋空間
