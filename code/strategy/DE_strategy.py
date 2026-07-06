@@ -16,6 +16,13 @@ class DE_Strategy(Strategy):
         找出最好的50個歷史的解，
         利用fg打分找出最好的子代
         對最好的子代進行真實環境運算
+
+        Args:
+            DB: Database, the database containing historical samples and their fitness values
+            f: callable, the real fitness function to evaluate new samples
+
+        Returns:
+            list of tuples, each containing a new sample and its evaluated fitness value
         '''
         #族群
         P, _ = DB.get_nbest(self.n)
@@ -40,7 +47,19 @@ class DE_Strategy(Strategy):
         return D_new
         
     def gen_next(self,P):
-        """ vi = x_r1 + F*(x_r2 - x_r3 """
+        """
+        DE/rand/1 變異與二項式交叉產生新一代向量
+        變異公式： vi = x_r1 + F*(x_r2 - x_r3)
+        交叉公式： uij = vij if rand(j) <= Cr else xij
+
+        Args:
+            P: np.array, shape (n, d), current population
+        Returns:
+            np.array, shape (n, d), new population after mutation and crossover
+        """
+
+        
+        """  """
         V = np.empty_like(P)
         n,d = P.shape
         for i in range(n):
