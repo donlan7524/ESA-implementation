@@ -1,5 +1,5 @@
 import numpy as np
-from base_Strategy import Strategy
+from strategy.base_Strategy import Strategy
 from RBF import  RBF
 
 

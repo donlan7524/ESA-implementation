@@ -14,6 +14,7 @@ class RBF():
     def __init__(self):
         #防止值為0
         self.eps = 1e-8
+        self.y_mean = 0.0
         
     # 找出需要參數    
     def fit(self,X : np.array,y : np.array) -> float:
@@ -27,19 +28,21 @@ class RBF():
         Dmax = float(np.sqrt(d2.max()))
         self.beta = max(Dmax * (d * N) ** (-1.0 / d), 1e-12)
         Phi = self.create_Phi(d2)
-        self.w = np.linalg.solve(Phi + self.eps * np.eye(N), y)
+        self.y_mean = float(np.mean(y))
+        y_center = y - self.y_mean
+        self.w = np.linalg.solve(Phi + self.eps * np.eye(N), y_center)
         self.X = X
         return self
     
     def predict(self,X_query):
         assert self.w is not None, "call fit() first"
         Xq = np.atleast_2d(np.asarray(X_query, dtype=float))
-        pred = self.create_Phi(distance(Xq, self.X)) @ self.w
+        pred = self.create_Phi(distance(Xq, self.X)) @ self.w + self.y_mean
         return pred[0] if np.asarray(X_query).ndim == 1 else pred
     
     #創建 matrix Phi 
     def create_Phi(self,d2):
-        return np.exp(-d2 / self.beta)  
+        return np.exp(-d2 / (2.0 * self.beta**2))  
     
     def cubic(self,d2):
         return d2 ** 1.5
