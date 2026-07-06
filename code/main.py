@@ -1,9 +1,10 @@
 import numpy as np
 from database import Database
-from brenchmarks.functions import sphere
+from brenchmarks.functions import shifted_sphere
 from strategy.DE_strategy import DE_Strategy
+from strategy.SLS_strategy import SLS_Strategy
 
-d = 20
+d = 5
 MaxFEs = 1000
 init_samples = 100
 bounds = np.array([[-100, 100]]*d)
@@ -11,17 +12,16 @@ rng = np.random.default_rng(42)
 history = []
 
 DB = Database(d, bounds)
-fes = DB.lhs(init_samples, sphere)
+fes = DB.lhs(init_samples, shifted_sphere)
 best_x, best_y = DB.getbest()
 print("Initial best y:", best_y)
-strategy = DE_Strategy(lb = bounds[:, 0], ub = bounds[:, 1], rng = rng)
+strategy = SLS_Strategy(lb = bounds[:, 0], ub = bounds[:, 1], rng = rng, l_best = min(max(20, d*5), 100))
 
 
 while fes < MaxFEs:
-    D_new = strategy.strategy(DB, sphere)
+    D_new = strategy.strategy(DB, shifted_sphere)
     
     for x_new, y_new in D_new:
-        old_best_x, old_best_y = DB.getbest()
         
         DB.add_sample(x_new, y_new)
         fes += 1
