@@ -39,7 +39,7 @@ def shifted_sphere(x):
     return np.sum((x - shift) ** 2)
 
 try:
-    from opfunu.cec_based import F102005,  F152005, F202005
+    from opfunu.cec_based import F102005, F162005, F192005
 except ImportError:
     pass
 
@@ -60,6 +60,6 @@ class opfunu_wrapper:
 def srr(d):
     return opfunu_wrapper(F102005, d)
 def rhc1(d):
-    return opfunu_wrapper(F152005, d)
+    return opfunu_wrapper(F162005, d)
 def rhc2(d):
-    return opfunu_wrapper(F202005, d)
+    return opfunu_wrapper(F192005, d)
