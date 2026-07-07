@@ -26,3 +26,8 @@ class DiscountedTS:
         self.a_cnt[action] += r
         self.b_cnt[action] += 1.0 - r
  
+    def _mask(self, scores, feasible):
+        s = np.asarray(scores, dtype=float).copy()
+        if feasible is not None:
+            s[~np.asarray(feasible, dtype=bool)] = -np.inf
+        return s

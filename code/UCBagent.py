@@ -28,4 +28,8 @@ class UCB1Selector:
         self.n[action] += 1
         self.mean[action] += (reward - self.mean[action]) / self.n[action]
  
- 
+    def _mask(self, scores, feasible):
+        s = np.asarray(scores, dtype=float).copy()
+        if feasible is not None:
+            s[~np.asarray(feasible, dtype=bool)] = -np.inf
+        return s
