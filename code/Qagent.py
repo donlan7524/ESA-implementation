@@ -48,3 +48,14 @@ class Qlearning:
     
     def update_T(self, T):
         self.T = T
+        
+    def coupute_reward(self,is_success,n_evals):
+        '''
+        以FE為單位的reward：
+        成功 -> 1 / 消耗的真實評估次數，失敗 -> 0。
+        TRLS(3 FE) 成功一次只拿 1/3，
+        和其他 1 FE 策略在相同預算下的期望報酬比較。
+        '''
+        if not is_success or n_evals <= 0:
+            return 0.0
+        return 1.0 / n_evals

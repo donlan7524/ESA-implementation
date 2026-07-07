@@ -34,6 +34,8 @@ min_T= 0.1
 Agent = Qlearning(alpha=0.1, gamma=0.9, T=init_T, rng=rng)
 current_state = Agent.get_initial_qtable()
 
+action_count = np.zeros(len(strategies), dtype=int)   # 統計各策略被選次數
+
 print(f"Initial best y: {global_best_y}")
 
 while fes < MaxFEs: 
@@ -43,25 +45,29 @@ while fes < MaxFEs:
     
     action = Agent.select_action(current_state)
     selected_strategy = strategies[action]
+    action_count[action]+=1
     
     D_new = selected_strategy.strategy(DB, bf.sphere)
     
     is_success = False
+    n_evals = 0 #實際入帳FE
     
     for x_new, y_new in D_new:
         if fes>= MaxFEs:
             break
         DB.add_sample(x_new, float(y_new))
         fes += 1
+        n_evals += 1
         
         if float(y_new) < global_best_y:
             is_success = True
             global_best_y = float(y_new)
+            global_best_x = np.copy(x_new)
             
         history.append(global_best_y)
         
     #假如找到更好，reward = 1 反之為 0
-    reward = 1 if is_success else 0
+    reward = Agent.compute_reward(is_success,n_evals)
     
     #尋找下個狀態並更新q_table
     next_state = Agent.next_state(action, is_success)
