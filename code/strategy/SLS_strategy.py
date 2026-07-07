@@ -13,9 +13,11 @@ class SLS_Strategy(Strategy):
     4. 透過 DE 尋找最佳解
     5. 實際計算最佳解 fitness
     """
-    def __init__(self, lb, ub, rng, l_best=20, pop_size=50, generations=50, F=0.5, Cr=0.9, min_ratio=1e-3):
+    def __init__(self, lb, ub, rng, l_best=None, pop_size=50, generations=50, F=(0.5,1), Cr=0.7, min_ratio=1e-6):
         super().__init__(lb, ub, rng)
-        self.l_best = l_best
+        d = len(lb)
+        
+        self.l_best = l_best if l_best is not None else min(25 + d, 60)
         self.pop_size = pop_size
         self.generations = generations
         self.F = F
@@ -81,9 +83,9 @@ class SLS_Strategy(Strategy):
         
         d = len(lb_local) 
         
-        scipy_pop_size = max(1,int(np.ceil(self.pop_size) / d))
+        init_pop = self.rng.uniform(lb_local, up_local, size=(self.pop_size, d))
         result = differential_evolution(func=surrogate_objective, bounds=scipy_bounds,
-                strategy="rand1bin",popsize=scipy_pop_size, maxiter=self.generations,
+                strategy="rand1bin",init=init_pop, maxiter=self.generations,
                 mutation=self.F, recombination=self.Cr,polish=False, rng=self.rng)
         
         return np.copy(result.x)

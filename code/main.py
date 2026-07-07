@@ -4,7 +4,7 @@ from brenchmarks.functions import shifted_sphere
 from strategy.DE_strategy import DE_Strategy
 from strategy.SLS_strategy import SLS_Strategy
 
-d = 5
+d = 100
 MaxFEs = 1000
 init_samples = 100
 bounds = np.array([[-100, 100]]*d)
@@ -15,7 +15,7 @@ DB = Database(d, bounds)
 fes = DB.lhs(init_samples, shifted_sphere)
 best_x, best_y = DB.getbest()
 print("Initial best y:", best_y)
-strategy = SLS_Strategy(lb = bounds[:, 0], ub = bounds[:, 1], rng = rng, l_best = min(max(20, d*5), 100))
+strategy = SLS_Strategy(lb = bounds[:, 0], ub = bounds[:, 1], rng = rng)
 
 
 while fes < MaxFEs:
