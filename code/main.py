@@ -1,25 +1,34 @@
 import numpy as np
 from database import Database
-from brenchmarks.functions import shifted_sphere
+import brenchmarks.functions as bf 
 from strategy.DE_strategy import DE_Strategy
 from strategy.SLS_strategy import SLS_Strategy
+from strategy.TRLS_Strategy import TRLS_Strategy
+from strategy.crossover_strategy import crossover_strategy
 
-d = 100
+#設置維度
+dim = 100
 MaxFEs = 1000
 init_samples = 100
-bounds = np.array([[-100, 100]]*d)
+bounds = np.array([[-100, 100]]*dim)
 rng = np.random.default_rng(42)
 history = []
 
-DB = Database(d, bounds)
-fes = DB.lhs(init_samples, shifted_sphere)
-best_x, best_y = DB.getbest()
-print("Initial best y:", best_y)
-strategy = SLS_Strategy(lb = bounds[:, 0], ub = bounds[:, 1], rng = rng)
+DB = Database(dim, bounds)
+fes = DB.lhs(init_samples, bf.shifted_sphere)
+global_best_x, global_best_y = DB.getbest()
+
+# 將a1 - a4 放入陣列中方便後面呼叫
+strategies = [  DE_Strategy(lb = bounds[:, 0], ub = bounds[:, 1], rng = rng), 
+                SLS_Strategy(lb = bounds[:, 0], ub = bounds[:, 1], rng = rng),
+                crossover_strategy(lb = bounds[:, 0], ub = bounds[:, 1], rng = rng) ,
+                TRLS_Strategy(lb = bounds[:, 0], ub = bounds[:, 1], rng = rng)]
+
+print("Initial best y:", global_best_y)
 
 
 while fes < MaxFEs:
-    D_new = strategy.strategy(DB, shifted_sphere)
+    D_new = strategies[0].strategy(DB, bf.shifted_sphere)
     
     for x_new, y_new in D_new:
         
