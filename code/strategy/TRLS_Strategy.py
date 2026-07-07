@@ -119,5 +119,6 @@ class TRLS_Strategy(Strategy):
             maxiter=self.generations,
             mutation=self.F, recombination=self.Cr,
             polish=False, rng=self.rng,
-            vectorized=True)
+            vectorized=True,
+            updating='deferred')
         return np.copy(result.x)

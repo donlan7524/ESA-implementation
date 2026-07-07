@@ -45,3 +45,6 @@ class Qlearning:
 
     def next_state(self, action, success):
         return action*2 + 1 if success else action*2
+    
+    def update_T(self, T):
+        self.T = T
