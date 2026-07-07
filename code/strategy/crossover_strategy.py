@@ -1,17 +1,12 @@
 import numpy as np
 
-from base_Strategy import Strategy
+from strategy.base_Strategy import Strategy
 from RBF import RBF
 
 # a3
 class crossover_strategy(Strategy):
     '''
-    Input: Database DB, Real fitness evaluation f
-    Output: New data Dnew
-    1 Build local surrogate fl based on the best l data from DB;
-    2 Calculate the local range [lb,ub] according to Eqs. 7 and 8 and data of fl;
-    3 Obtain one candidate xc by minimizing fl using JADE in the local region;
-    4 {xc, f(xc)} is added to Dnew;
+    
     '''
 
     def __init__(self, lb, ub, rng, m=100):
@@ -53,8 +48,6 @@ class crossover_strategy(Strategy):
             x_best[i] = P_t[best_index, i]
 
         x_best = self.clip(x_best) # check if the candidate solution is within the bounds
-        D_new = [x_best, float(f(x_best))]
+        D_new = [(x_best, float(f(x_best)))]
 
-        return D_new    
-        
-
+        return D_new
