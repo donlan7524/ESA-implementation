@@ -5,19 +5,19 @@ def sphere(x):
     return np.sum(x**2)
 
 def ellipsoid(x):
-    x = np.asarray(x)
+    x = np.asarray(x,dtype = float)
     d = len(x)
     if d == 1:
         return x[0]**2
-    return np.sum((10**(6 * np.arange(d) / (d - 1))) * (x**2))
+    return np.sum((10**(6 * np.arange(d) / (d - 1))) * x ** 2)
 
 
 def rosenbrock(x):
-    x = np.asarray(x)
+    x = np.asarray(x,dtype = float)
     return np.sum(100 * (x[1:] - x[:-1]**2)**2 + (x[:-1] - 1)**2)
 
 def ackley(x):
-    x = np.asarray(x)
+    x = np.asarray(x,dtype = float)
     d = len(x)
 
     sum1 = np.sum(x**2)

@@ -67,7 +67,9 @@ def run_experiment(func_name, dim, seed):
         current_state = Agent.get_initial_qtable()
 
         action_count = np.zeros(len(strategies), dtype=int)   # 統計各策略被選次數
+        success_count = np.zeros(len(strategies), dtype=int)
         history = [global_best_y] * fes
+        
 
         #開始迴圈
         while fes < MaxFEs: 
@@ -94,6 +96,9 @@ def run_experiment(func_name, dim, seed):
                     global_best_x = np.copy(x_new)
                 
                 history.append(global_best_y)                    
+            
+            if is_success:
+                success_count[action]+=1
                 
             #假如找到更好，reward = 1 反之為 0
             reward = Agent.coupute_reward(is_success,n_evals)
@@ -110,7 +115,8 @@ def run_experiment(func_name, dim, seed):
             'seed': seed,
             'best_y': global_best_y,
             'history': json.dumps(history),
-            'action_count':action_count
+            'action_count':action_count,
+            'success_count':success_count
         }
     except Exception as e:
         return {'func': func_name, 'dim': dim, 'seed': seed, 'error': str(e)}
