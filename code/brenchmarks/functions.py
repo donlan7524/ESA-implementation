@@ -38,6 +38,12 @@ def shifted_sphere(x):
     shift = np.ones_like(x) * 3.0
     return np.sum((x - shift) ** 2)
 
+def get_rotation_matrix(d, rng):
+    H = rng.standard_normal((d, d))
+    Q, R = np.linalg.qr(H)
+    return Q
+
+
 try:
     from opfunu.cec_based import F102005, F162005, F192005
 except ImportError:

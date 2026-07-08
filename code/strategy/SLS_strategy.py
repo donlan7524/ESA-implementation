@@ -23,7 +23,6 @@ class SLS_Strategy(Strategy):
         self.F = F
         self.Cr = Cr
         self.min_ratio = min_ratio
-        print(self.l_best)
         
     def strategy(self, DB, f):
         """
