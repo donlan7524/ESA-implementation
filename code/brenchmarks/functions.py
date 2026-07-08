@@ -7,9 +7,7 @@ def sphere(x):
 def ellipsoid(x):
     x = np.asarray(x)
     d = len(x)
-    if d == 1:
-        return x[0]**2
-    return np.sum((10**(6 * np.arange(d) / (d - 1))) * (x**2))
+    return np.sum(np.arange(1, d + 1) * (x**2))
 
 
 def rosenbrock(x):
