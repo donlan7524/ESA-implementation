@@ -104,13 +104,13 @@ class SLS_Strategy(Strategy):
         archive=[]
         
         pop = self.rng.uniform(lb, ub, (pop_size, d))
-        fitness = np.array(model.predict(pop)).flatten
+        fitness = np.array(model.predict(pop)).flatten()
         
         for gen in range(maxiter):
             S_cr = []
             S_f= []
             
-            cr = self.rng.uniform(mu_cr, 0.1, pop_size) #生成CR
+            cr = self.rng.normal(mu_cr, 0.1, pop_size) #生成CR
             cr = np.clip(cr, 0, 1) #大於1的話截斷在1
             
             #生成F
@@ -129,7 +129,7 @@ class SLS_Strategy(Strategy):
             sorted_index = np.argsort(fitness)
             p_best_index = sorted_index[:max(1, int(pop_size * p))]
             
-            new_pop = np.zeros_like[pop]
+            new_pop = np.zeros_like(pop)
             
             #建立一個包含「當前族群 + Archive」
             pop_archive = np.vstack((pop,np.array(archive))) if len(archive) > 0 else pop
@@ -155,7 +155,7 @@ class SLS_Strategy(Strategy):
                 # crossover 開始
                 j_rand = self.rng.integers(0,d)
                 mask = self.rng.random(d) <= cr[i]
-                mask [j_rand] = True
+                mask[j_rand] = True
                 
                 u = np.where(mask, v, pop[i])
                 u = np.clip(u, lb, ub)
@@ -186,7 +186,7 @@ class SLS_Strategy(Strategy):
                 mu_f = (1 - c) * mu_f + c * (np.sum(sf_arr**2) / np.sum(sf_arr))
                    
             best_idx = np.argmin(fitness)
-            return np.copy(pop[best_idx])
+        return np.copy(pop[best_idx])
             
             
             
