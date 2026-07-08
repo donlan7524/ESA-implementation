@@ -5,17 +5,19 @@ def sphere(x):
     return np.sum(x**2)
 
 def ellipsoid(x):
-    x = np.asarray(x)
+    x = np.asarray(x,dtype = float)
     d = len(x)
-    return np.sum(np.arange(1, d + 1) * (x**2))
+    if d == 1:
+        return x[0]**2
+    return np.sum((10**(6 * np.arange(d) / (d - 1))) * x ** 2)
 
 
 def rosenbrock(x):
-    x = np.asarray(x)
+    x = np.asarray(x,dtype = float)
     return np.sum(100 * (x[1:] - x[:-1]**2)**2 + (x[:-1] - 1)**2)
 
 def ackley(x):
-    x = np.asarray(x)
+    x = np.asarray(x,dtype = float)
     d = len(x)
 
     sum1 = np.sum(x**2)
@@ -35,6 +37,12 @@ def shifted_sphere(x):
     x = np.asarray(x)
     shift = np.ones_like(x) * 3.0
     return np.sum((x - shift) ** 2)
+
+def get_rotation_matrix(d, rng):
+    H = rng.standard_normal((d, d))
+    Q, R = np.linalg.qr(H)
+    return Q
+
 
 try:
     from opfunu.cec_based import F102005, F162005, F192005
