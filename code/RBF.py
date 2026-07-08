@@ -1,5 +1,6 @@
 import math
 import numpy as np
+import scipy.linalg as spla
 
 def distance(x1,x2):
     X1 = np.sum(x1 * x1, axis=1)[:, None]
@@ -37,7 +38,14 @@ class RBF():
         
         Phi = self.create_Phi(d2)
         
-        self.w = np.linalg.solve(Phi + self.eps * np.eye(N), y_scaled)
+        # 使用 scipy 的正定矩陣專用求解器，或以 lstsq 提高穩健性
+        try:
+            # 假設對稱正定，使用 assumes_a='pos' (基於 Cholesky 分解)
+            self.w = spla.solve(Phi + self.eps * np.eye(N), y_scaled, assume_a='pos')
+        except np.linalg.LinAlgError:
+            # 若發生奇異矩陣錯誤，退回使用穩健的最小平方法
+            self.w, _, _, _ = np.linalg.lstsq(Phi + self.eps * np.eye(N), y_scaled, rcond=None)
+        
         self.X = X
         return self
     
