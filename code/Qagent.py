@@ -58,4 +58,4 @@ class Qlearning:
         '''
         if not is_success or n_evals <= 0:
             return 0.0
-        return 1.0 
+        return 1.0/n_evals
