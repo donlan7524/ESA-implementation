@@ -24,12 +24,21 @@ class SLS_Strategy(Strategy):
         self.Cr = Cr
         self.min_ratio = min_ratio
         
+        self.x_min = None
+        self.x_range = None
+        
     def strategy(self, DB, f):
         """
         step 1 and 2 
         """
         xl, yl = DB.get_nbest(min(self.l_best, len(DB)))
-        model = RBF().fit(xl,yl)
+        self.x_min = np.min(xl, axis=0)
+        x_max = np.max(xl, axis=0)
+        
+        self.x_range = np.where(x_max - self.x_min == 0, 1e-8, x_max - self.x_min)
+        xl_norm = (xl - self.x_min) / self.x_range
+        model = RBF().fit(xl_norm,yl)
+        
         """
         step 3 : 
         """
@@ -81,7 +90,7 @@ class SLS_Strategy(Strategy):
         maxiter = 300
 
         #JADE 基本參數
-        p = 0.5
+        p = 0.05
         c = 0.1
         mu_cr = 0.5
         mu_f = 0.5

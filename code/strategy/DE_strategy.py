@@ -31,7 +31,12 @@ class DE_Strategy(Strategy):
         #建立全域代理
         g = max(min(len(DB), self.g_max), DB.d + 1)
         Xg, yg = DB.get_nbest(min(g, len(DB)))
-        model = RBF().fit(Xg,yg)
+        self.x_min = np.min(Xg, axis=0)
+        x_max = np.max(Xg, axis=0)
+        
+        self.x_range = np.where(x_max - self.x_min == 0, 1e-8, x_max - self.x_min)
+        xg_norm = (Xg - self.x_min) / self.x_range
+        model = RBF().fit(xg_norm,yg)
         
         #產生突變及交配
         trials = self.gen_next(P)
