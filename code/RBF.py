@@ -60,7 +60,7 @@ class RBF():
     
     #創建 matrix Phi 
     def create_Phi(self,d2):
-        return np.exp(-d2 / self.beta)  
+        return np.exp(-d2 / self.beta ** 2)  
     
     def cubic(self,d2):
         return d2 ** 1.5
