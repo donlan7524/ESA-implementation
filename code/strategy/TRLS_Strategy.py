@@ -29,7 +29,7 @@ class TRLS_Strategy(Strategy):
             super().__init__(lb, ub, rng)
             self.m = m                    # 外層盒資料量 (100)
             self.kmax = kmax              # 信賴域迭代次數 = 消耗 FE 数 (3)
-            self.xi = xi                  # ρ>=0.75 时半徑放大系數 
+            self.xi = xi                  # ρ>=0.75 时半徑放大係數
             self.pop_size = pop_size      # 内部 DE 設定 
             self.generations = generations
             self.F = F

@@ -141,7 +141,7 @@ if __name__ == '__main__':
     result = []
     
     #開啟多核心運算
-    with concurrent.futures.ProcessPoolExecutor(max_workers=6) as executer:
+    with concurrent.futures.ProcessPoolExecutor(max_workers=20) as executer:
         futures = {executer.submit(run_experiment, f, d, s): (f, d, s) for f, d, s in task}
         
         complete = 0
