@@ -29,8 +29,8 @@ class DE_Strategy(Strategy):
         n,d = P.shape
         
         #建立全域代理
-        g = min(len(DB),self.g_max)
-        Xg, yg = DB.get_nbest(g)
+        g = max(min(len(DB), self.g_max), DB.d + 1)
+        Xg, yg = DB.get_nbest(min(g, len(DB)))
         model = RBF().fit(Xg,yg)
         
         #產生突變及交配

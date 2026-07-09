@@ -13,6 +13,7 @@ import concurrent.futures
 import time
 import pandas as pd
 import json
+import os
 
 from Qagent import Qlearning
 from database import Database
@@ -20,6 +21,7 @@ from strategy.DE_strategy import DE_Strategy
 from strategy.SLS_strategy import SLS_Strategy
 from strategy.TRLS_Strategy import TRLS_Strategy
 from strategy.crossover_strategy import crossover_strategy
+from strategy.LBFGS_Strategy import LBFGS_Strategy
 
 
 #定義每個要做的實驗種類
@@ -60,7 +62,8 @@ def run_experiment(func_name, dim, seed):
         strategies = [  DE_Strategy(lb = bounds[:, 0], ub = bounds[:, 1], rng = rng), 
                         SLS_Strategy(lb = bounds[:, 0], ub = bounds[:, 1], rng = rng),
                         crossover_strategy(lb = bounds[:, 0], ub = bounds[:, 1], rng = rng) ,
-                        TRLS_Strategy(lb = bounds[:, 0], ub = bounds[:, 1], rng = rng)]
+                        TRLS_Strategy(lb = bounds[:, 0], ub = bounds[:, 1], rng = rng),
+                        LBFGS_Strategy(lb = bounds[:, 0], ub = bounds[:, 1], rng = rng)]
 
         # 導入Qlearning agent
         Agent = Qlearning(alpha=0.1, gamma=0.9, T=1.0, rng=rng)
@@ -69,14 +72,23 @@ def run_experiment(func_name, dim, seed):
         action_count = np.zeros(len(strategies), dtype=int)   # 統計各策略被選次數
         success_count = np.zeros(len(strategies), dtype=int)
         history = [global_best_y] * fes
+        history_improvements = {0: [], 1: [], 2: [], 3: [], 4: []}
         
-
+        stagnation_counter = 0
+        stagnation_limit = 10
         #開始迴圈
         while fes < MaxFEs: 
             #透過current_state決定下個動作
             action = Agent.select_action(current_state)
             selected_strategy = strategies[action]
+            
+            if stagnation_counter >= stagnation_limit:
+                action = 1
+                stagnation_counter = 0
+            
+            #紀錄action被選擇次數與每次改善的幅度
             action_count[action]+=1
+            current_best = DB.getbest()[1]
             
             D_new = selected_strategy.strategy(DB, objective_func)
             is_success = False
@@ -99,9 +111,14 @@ def run_experiment(func_name, dim, seed):
             
             if is_success:
                 success_count[action]+=1
+                new_best = DB.getbest()[1]
+                improvement = float(current_best) - float(new_best)
+                history_improvements[action].append(improvement)
+            else:
+                stagnation_counter += 1
                 
             #假如找到更好，reward = 1 反之為 0
-            reward = Agent.coupute_reward(is_success,n_evals)
+            reward = Agent.compute_reward(is_success,n_evals)
             
             #尋找下個狀態並更新q_table
             next_state = Agent.next_state(action, is_success)
@@ -116,15 +133,16 @@ def run_experiment(func_name, dim, seed):
             'best_y': global_best_y,
             'history': json.dumps(history),
             'action_count':action_count,
-            'success_count':success_count
+            'success_count':success_count,
+            'history_improvments': json.dumps(history_improvements)
         }
     except Exception as e:
         return {'func': func_name, 'dim': dim, 'seed': seed, 'error': str(e)}
 
 if __name__ == '__main__':
     funcs_to_test = ['Ellipsoid', 'Rosenbrock', 'Ackley', 'Griewank', 'SRR', 'RHC1', 'RHC2'] 
-    dims_to_test = [30, 50, 100]
-    runs_per_dim = 5 # 論文設定每組跑 20 次
+    dims_to_test = [30, 50]
+    runs_per_dim = 1 # 論文設定每組跑 20 次
     
     task = []
     for func in funcs_to_test:
@@ -141,7 +159,7 @@ if __name__ == '__main__':
     result = []
     
     #開啟多核心運算
-    with concurrent.futures.ProcessPoolExecutor(max_workers=20) as executer:
+    with concurrent.futures.ProcessPoolExecutor(max_workers=6) as executer:
         futures = {executer.submit(run_experiment, f, d, s): (f, d, s) for f, d, s in task}
         
         complete = 0
