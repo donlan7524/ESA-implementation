@@ -49,7 +49,7 @@ class Qlearning:
     def update_T(self, T):
         self.T = T
         
-    def coupute_reward(self,is_success,n_evals):
+    def compute_reward(self,is_success,n_evals):
         '''
         以FE為單位的reward：
         成功 -> 1 / 消耗的真實評估次數，失敗 -> 0。

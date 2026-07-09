@@ -13,6 +13,7 @@ import concurrent.futures
 import time
 import pandas as pd
 import json
+import os
 
 from Qagent import Qlearning
 from database import Database
@@ -117,7 +118,7 @@ def run_experiment(func_name, dim, seed):
                 stagnation_counter += 1
                 
             #假如找到更好，reward = 1 反之為 0
-            reward = Agent.coupute_reward(is_success,n_evals)
+            reward = Agent.compute_reward(is_success,n_evals)
             
             #尋找下個狀態並更新q_table
             next_state = Agent.next_state(action, is_success)
@@ -158,7 +159,9 @@ if __name__ == '__main__':
     result = []
     
     #開啟多核心運算
-    with concurrent.futures.ProcessPoolExecutor(max_workers=8) as executer:
+    #若不想跑電腦核心數-1，請調整max_core
+    max_core = max(1,os.cpu_count()-1)
+    with concurrent.futures.ProcessPoolExecutor(max_workers=max_core) as executer:
         futures = {executer.submit(run_experiment, f, d, s): (f, d, s) for f, d, s in task}
         
         complete = 0
