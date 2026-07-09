@@ -41,18 +41,23 @@ class TRLS_Strategy(Strategy):
         
         #外層包裹盒
         Xm,ym = DB.get_nbest(min(self.m,len(DB)))
-        lb_outer = np.maximum(Xm.min(axis=0), self.lb)
-        ub_outer = np.minimum(Xm.max(axis=0), self.ub)
+        global_width = self.ub - self.lb
+        margin = Xm.max(axis=0) - Xm.min(axis=0)
+        margin = np.maximum(margin, 0.05*global_width)
+
+        lb_outer = np.maximum(Xm.min(axis=0) - 0.5 * margin, self.lb)
+        ub_outer = np.minimum(Xm.max(axis=0) + 0.5 * margin, self.ub)
         
         #初始半徑
         xbest,f_best = DB.getbest()
         X_nb,y_nb = DB.nearest_point(xbest,5*d)
         x_min_resp = X_nb[int(np.argmin(y_nb))]   #界內y最小點
         x_max_resp = X_nb[int(np.argmax(y_nb))]   #界內y最大點
-        delta = 0.5 * np.linalg.norm(x_min_resp - x_max_resp) #步伐為1半[ymax到ymin]
-        if delta <= 0:                             # 鄰居和自己重合
-            delta = 0.05 * np.mean(self.ub - self.lb)
-            
+        init_delta = 0.5 * np.linalg.norm(x_min_resp - x_max_resp) #步伐為1半[ymax到ymin]
+        if init_delta <= 0:                             # 鄰居和自己重合
+            init_delta = 0.05 * np.mean(self.ub - self.lb)
+          
+        delta = init_delta  
         #創建資料池  
         X_pool, y_pool = np.copy(Xm), np.copy(ym)
         
@@ -95,10 +100,15 @@ class TRLS_Strategy(Strategy):
             #更新 xbest, 再更新半徑
             if yc < f_best:
                 xbest, f_best = np.copy(xc), yc
+                
+            min_delta = 1e-5
             if rho <= 0.25:
                 delta *= 0.25
             elif rho >= 0.75:
                 delta *= self.xi
+                
+            if delta < min_delta:
+                delta = init_delta / 2.0
             # 0.25 < rho < 0.75: delta 不變
  
         return D_new 

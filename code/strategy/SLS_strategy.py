@@ -13,7 +13,7 @@ class SLS_Strategy(Strategy):
     4. 透過 DE 尋找最佳解
     5. 實際計算最佳解 fitness
     """
-    def __init__(self, lb, ub, rng, l_best=None, pop_size=10, generations=150, F=(0.5,1), Cr=0.7, min_ratio=1e-6):
+    def __init__(self, lb, ub, rng, l_best=None, pop_size=10, generations=150, F=(0.5,1), Cr=0.7, min_ratio=1e-15):
         super().__init__(lb, ub, rng)
         d = len(lb)
         
@@ -48,9 +48,11 @@ class SLS_Strategy(Strategy):
         """
         確保 local bounds 不超過全域邊界，同時local bounds的寬度不小於min_width避免發生坍塌
         """
-        lb_local = np.maximum(lb_local, self.lb)
-        ub_local = np.minimum(ub_local, self.ub)
         global_width = self.ub - self.lb
+        margin = ub_local - lb_local
+        margin = np.maximum(margin, 0.05*global_width)
+        lb_local = np.maximum(lb_local - 0.5 * margin, self.lb)
+        ub_local = np.minimum(ub_local + 0.5 * margin, self.ub)
         min_width = global_width * self.min_ratio
         
         for i in range(len(lb_local)):
