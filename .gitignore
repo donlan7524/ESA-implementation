@@ -152,3 +152,7 @@ Thumbs.db
 *.jpeg
 *.pdf
 !Evolutionary_Sampling_Agent_for_Expensive_Problems.pdf
+
+#.py
+test.py
+RBF_surrogate.py

@@ -13,10 +13,10 @@ class Qlearning:
         self.T = T
         self.rng = rng if rng is not None else np.random.default_rng()
 
-        self.qtable = np.full((8, 4), 0.25)
+        self.qtable = np.full((10, 5), 0.25)
 
     def get_initial_qtable(self):
-        return self.rng.choice([0,2,4,6])
+        return self.rng.choice([0,2,4,6,8])
 
     def select_action(self, state):
         '''
@@ -29,7 +29,7 @@ class Qlearning:
         # Subtract max for numerical stability to prevent overflow
         exp_q = np.exp((q_values - np.max(q_values)) / self.T)
         probs = exp_q / np.sum(exp_q)
-        return self.rng.choice(4, p=probs)
+        return self.rng.choice(5, p=probs)
     
     def q_update(self, state, action, reward, next_state):
         '''
