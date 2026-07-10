@@ -13,11 +13,13 @@ class SLS_Strategy(Strategy):
     4. 透過 JADE 尋找最佳解
     5. 實際計算最佳解 fitness
     """
-    def __init__(self, lb, ub, rng, l_best=None, pop_size=10, generations=150, F=(0.5,1), Cr=0.7, min_ratio=1e-15):
+    def __init__(self, lb, ub, rng, l_best=None, pop_size=10, generations=150, F=(0.5,1), Cr=0.7, min_ratio=1e-15, poly_tail_min_ratio=3.0):
         super().__init__(lb, ub, rng)
         d = len(lb)
         
-        self.l_best = l_best if l_best is not None else min(25 + d, 60)
+        min_required = int(np.ceil(poly_tail_min_ratio * (2 * d + 1))) + 10
+        self.l_best = l_best if l_best is not None else max(25 + d, min_required)
+        #self.l_best = l_best if l_best is not None else min(25 + d, 60)
         self.pop_size = pop_size
         self.generations = generations
         self.F = F
@@ -54,7 +56,7 @@ class SLS_Strategy(Strategy):
         """
         global_width = self.ub - self.lb
         margin = ub_local - lb_local
-        margin = np.maximum(margin, 1e-4*global_width)
+        margin = np.maximum(margin, 0.05*global_width)
         lb_local = np.maximum(lb_local - margin, self.lb)
         ub_local = np.minimum(ub_local + margin, self.ub)
         min_width = global_width * self.min_ratio

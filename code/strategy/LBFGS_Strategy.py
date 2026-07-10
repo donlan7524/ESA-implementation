@@ -15,7 +15,7 @@ class LBFGS_Strategy(Strategy):
     def __init__(self, lb, ub, rng, l_best=None):
         super().__init__(lb, ub, rng)
         d = len(lb)
-        self.l_best = l_best if l_best is not None else max(2*d, 10)
+        self.l_best = l_best if l_best is not None else max(2*d+1, 10)
         
     def strategy(self, DB, f):
         """
@@ -32,8 +32,8 @@ class LBFGS_Strategy(Strategy):
 
         margin = x_local.max(axis=0) - x_local.min(axis=0)
         margin = np.maximum(margin, global_width*0.05)
-        lb_local = np.maximum(x_local.min(axis=0) - 0.5 * margin, self.lb)
-        ub_local = np.minimum(x_local.max(axis=0) + 0.5 * margin, self.ub)
+        lb_local = np.maximum(x_local.min(axis=0) - margin, self.lb)
+        ub_local = np.minimum(x_local.max(axis=0) + margin, self.ub)
         bounds = list(zip(lb_local,ub_local))
         
         result = minimize(

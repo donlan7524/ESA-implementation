@@ -4,10 +4,10 @@ import scipy.linalg as spla
 
 """
 原本RBF問題:
-1.病態矩陣 解 加正則化，變成 Ridge/regularized RBF
-2.Shape parameter ϵ 用 LOOCV 誤差最小化來選 ϵ
-3.純 RBF 沒有 polynomial trend
-
+1.在高維度下會使 exp(-d**2/beta**2) 變為0 解決方法:加入 polynomial trend
+2.病態矩陣 解 加Tikhonov正則化，變成 Ridge/regularized RBF
+3.beta值被固定的話容易產生高維度形狀參數失效 解 加Rippa's LOOCV 超參數自適應 
+4.polynomial trend 模擬不全問題 修正方式：把尾項升到二次（只加對角線平方項，不加交叉項）
 """
 
 def distance(x1, x2):
@@ -23,7 +23,7 @@ def distance(x1, x2):
 # d 為 問題參數dim , N 為 訓練資料筆數
 class RBF():
     def __init__(self, beta_candidates=None, lam_candidates=None, use_poly_tail=True,
-                 poly_tail_min_ratio=1.2):
+                 poly_tail_min_ratio=3.0):
         """
         beta_candidates : shape parameter 候選倍率(乘上 Dmax_normalized)，用 LOOCV 挑最佳
         lam_candidates  : Tikhonov 正則化係數候選，用 LOOCV 挑最佳
@@ -47,7 +47,7 @@ class RBF():
         self.poly_tail_active = False   # 這次 fit() 實際上有沒有用到多項式尾項
         self.ill_conditioned = False    # 是否曾偵測到病態警告(供除錯用)
 
-    # ---------- 內部工具 ----------
+    # --- 內部function ---
 
     def _normalize_X(self, X):
         """線性映射到 [0,1]^d，讓不同 domain 尺度的問題使用同一套 beta/lambda 邏輯"""
@@ -55,6 +55,18 @@ class RBF():
 
     def create_Phi(self, d2, beta):
         return np.exp(-d2 / beta ** 2)
+    
+    def _poly_features(self, X):
+        """
+        多項式尾項特徵: [1, x_1..x_d, x_1^2..x_d^2]
+        只加對角線二次項(不含交叉項 x_i*x_j)，維持 O(d) 而非 O(d^2) 參數量，
+        同時已足以完美表達 Ellipsoid 這類「各維度獨立平方相加」的曲面，
+        純線性尾項(無平方項)完全無法表達曲率，是先前版本在這類問題上失準的根本原因。
+        """
+        return np.hstack([np.ones((X.shape[0], 1)), X, X ** 2])
+ 
+    def _poly_dim(self, d):
+        return 2 * d + 1   # 常數項(1) + 線性項(d) + 對角線平方項(d)
 
     def _build_system(self, Phi, d, N):
         """
@@ -63,9 +75,10 @@ class RBF():
         [ P^T   0 ] [c] = [0]
         其中 P = [1, x] (常數項 + 線性項)，並施加正交條件 sum(w)=0, sum(w*x)=0
         """
-        P = np.hstack([np.ones((N, 1)), self.X])          # N x (d+1)
+        P = self._poly_features(self.X)                   # N x (2d+1)
+        pd = self._poly_dim(d)
         top = np.hstack([Phi, P])
-        bottom = np.hstack([P.T, np.zeros((d + 1, d + 1))])
+        bottom = np.hstack([P.T, np.zeros((pd, pd))])
         A = np.vstack([top, bottom])
         return A, P
 
@@ -91,7 +104,7 @@ class RBF():
         Phi_reg = Phi + lam * np.eye(N)
         if use_poly_tail:
             A, P = self._build_system(Phi_reg, d, N)
-            rhs = np.concatenate([y_scaled, np.zeros(d + 1)])
+            rhs = np.concatenate([y_scaled, np.zeros(self._poly_dim(d))])
             sol = self._safe_solve_sym(A, rhs)
             if sol is None:
                 # 增廣系統病態或奇異 -> 用最小平方法兜底，仍然嘗試給出合理解
@@ -135,7 +148,7 @@ class RBF():
                     # 這組 (beta, lambda) 在增廣系統下已經病態，直接淘汰，
                     # 不要讓病態解的假性低 LOOCV 誤差誤導超參數選擇
                     return np.inf
-            rhs = np.concatenate([y_scaled, np.zeros(d + 1)])
+            rhs = np.concatenate([y_scaled, np.zeros(self._poly_dim(d))])
             sol = Ainv @ rhs
             w = sol[:N]
             diag = np.diag(Ainv)[:N]
@@ -156,7 +169,7 @@ class RBF():
 
         # 決定這次 fit() 是否有資格用多項式尾項
         # 當資料庫中資料不足時採用純RBF 否則容易出現奇異解
-        self.poly_tail_active = self.use_poly_tail and (N >= self.poly_tail_min_ratio * (d + 1))
+        self.poly_tail_active = self.use_poly_tail and (N >= self.poly_tail_min_ratio * self._poly_dim(d))
         self.ill_conditioned = False
 
         # 輸入正規化
@@ -219,7 +232,7 @@ class RBF():
         pred_scaled = Phi_q @ self.w
 
         if self.poly_tail_active and self.c is not None:
-            P_q = np.hstack([np.ones((Xq_norm.shape[0], 1)), Xq_norm])
+            P_q = self._poly_features(Xq_norm)
             pred_scaled = pred_scaled + P_q @ self.c
 
         pred = pred_scaled * self.y_std + self.y_mean

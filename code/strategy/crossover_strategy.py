@@ -9,14 +9,16 @@ class crossover_strategy(Strategy):
     
     '''
 
-    def __init__(self, lb, ub, rng, m=100):
+    def __init__(self, lb, ub, rng, m=None, poly_tail_min_ratio=3.0):
         '''
         Args:
             m: int, the number of candidate solutions to generate
         '''
         super().__init__(lb, ub, rng)
 
-        self.m=m
+        d = len(lb)
+        min_required = int(np.ceil(poly_tail_min_ratio * (2 * d + 1))) + 10
+        self.m = m if m is not None else max(100, min_required)
 
     def strategy(self, DB, f):
         '''
