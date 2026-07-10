@@ -32,12 +32,7 @@ class SLS_Strategy(Strategy):
         step 1 and 2 
         """
         xl, yl = DB.get_nbest(min(self.l_best, len(DB)))
-        self.x_min = np.min(xl, axis=0)
-        x_max = np.max(xl, axis=0)
-        
-        self.x_range = np.where(x_max - self.x_min == 0, 1e-8, x_max - self.x_min)
-        xl_norm = (xl - self.x_min) / self.x_range
-        model = RBF().fit(xl_norm,yl)
+        model = RBF().fit(xl,yl)
         
         """
         step 3 : 
@@ -59,9 +54,9 @@ class SLS_Strategy(Strategy):
         """
         global_width = self.ub - self.lb
         margin = ub_local - lb_local
-        margin = np.maximum(margin, 0.05*global_width)
-        lb_local = np.maximum(lb_local - 0.5 * margin, self.lb)
-        ub_local = np.minimum(ub_local + 0.5 * margin, self.ub)
+        margin = np.maximum(margin, 1e-4*global_width)
+        lb_local = np.maximum(lb_local - margin, self.lb)
+        ub_local = np.minimum(ub_local + margin, self.ub)
         min_width = global_width * self.min_ratio
         
         for i in range(len(lb_local)):
