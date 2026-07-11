@@ -1,6 +1,8 @@
 import numpy as np
 from strategy.base_Strategy import Strategy
+from scipy.spatial.distance import cdist
 from RBF import  RBF
+from GP_surrogate import GP
 
 
 class DE_Strategy(Strategy):
@@ -35,16 +37,38 @@ class DE_Strategy(Strategy):
         #建立全域代理
         g = max(min(len(DB), self.g_max), DB.d + 1)
         Xg, yg = DB.get_nbest(min(g, len(DB)))
-        model = RBF(beta_candidates=self.beta_candidates, lam_candidates=self.lam_candidates).fit(Xg,yg)
+        
+        model_rbf = RBF(beta_candidates=self.beta_candidates, lam_candidates=self.lam_candidates).fit(Xg,yg)
+        model_gp = GP().fit(Xg,yg)
         
         #產生突變及交配
         trials = self.gen_next(P)
         #確保解落在合法空間
         trials = self.clip(trials)
         
+        dists = cdist(trials, Xg)
+        
         #找出模擬分數最高子代
-        pred = model.predict(trials)
-        xc = trials[int(np.argmin(pred))]
+        pred = model_gp.predict(trials)
+        
+        min_dists = np.min(dists, axis=1)
+        
+        # 2. 估算當前已知資料的平均間距，作為「安全探索範圍」的閾值
+        # 避免初期 Xg 太少導致計算錯誤，加上保護機制
+        if len(Xg) > 1:
+            avg_dist = np.mean(cdist(Xg, Xg))
+        else:
+            avg_dist = 1.0 
+            
+        # 3. 距離懲罰機制：如果候選點離已知點太遠 (超過平均距離)，加上巨大懲罰
+        # 這能強迫演算法在初期模型不準時，不要亂跑去完全沒看過的邊界
+        penalty = np.zeros_like(pred)
+        far_mask = min_dists > avg_dist
+        penalty[far_mask] = 1e6 * min_dists[far_mask]  # 距離越遠，懲罰越重
+        
+        adjusted_pred = pred + penalty
+        
+        xc = trials[int(np.argmin(adjusted_pred))]
  
         #真實評估
         D_new = [(xc, float(f(xc)))]

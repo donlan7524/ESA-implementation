@@ -2,6 +2,7 @@ import numpy as np
 from strategy.base_Strategy import Strategy
 from scipy.optimize import differential_evolution
 from RBF import RBF
+from GP_surrogate import GP
 
 class SLS_Strategy(Strategy):
     """
@@ -34,7 +35,8 @@ class SLS_Strategy(Strategy):
         step 1 and 2 
         """
         xl, yl = DB.get_nbest(min(self.l_best, len(DB)))
-        model = RBF().fit(xl,yl)
+        model_rbf = RBF().fit(xl,yl)
+        model_gp = GP().fit(xl,yl)
         
         """
         step 3 : 
@@ -46,7 +48,7 @@ class SLS_Strategy(Strategy):
         """
         step 4: 使用 JADE 
         """
-        xc = self.jade_minimize(model, lb_local, ub_local)
+        xc = self.jade_minimize(model_gp, lb_local, ub_local)
         D_new = [(xc, float(f(xc)))]
         return D_new
     

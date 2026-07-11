@@ -75,16 +75,16 @@ def run_experiment(func_name, dim, seed):
         history_improvements = {0: [], 1: [], 2: [], 3: [], 4: []}
         
         stagnation_counter = 0
-        stagnation_limit = 10
+        stagnation_limit = 20
         #開始迴圈
         while fes < MaxFEs: 
             #透過current_state決定下個動作
             action = Agent.select_action(current_state)
+            if stagnation_counter >= stagnation_limit:
+                action = 0
+                stagnation_counter = 0
             selected_strategy = strategies[action]
             
-            if stagnation_counter >= stagnation_limit:
-                action = 1
-                stagnation_counter = 0
             
             #紀錄action被選擇次數與每次改善的幅度
             action_count[action]+=1
@@ -141,7 +141,7 @@ def run_experiment(func_name, dim, seed):
 
 if __name__ == '__main__':
     funcs_to_test = ['Ellipsoid', 'Rosenbrock', 'Ackley', 'Griewank', 'SRR', 'RHC1', 'RHC2'] 
-    dims_to_test = [30, 50]
+    dims_to_test = [30]
     runs_per_dim = 1 # 論文設定每組跑 20 次
     
     task = []

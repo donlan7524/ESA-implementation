@@ -2,6 +2,7 @@ import numpy as np
 from strategy.base_Strategy import Strategy
 from scipy.optimize import differential_evolution
 from RBF import RBF
+from GP_surrogate import GP
 '''
 
 輸入: DB, 真實評估 f
@@ -82,10 +83,11 @@ class TRLS_Strategy(Strategy):
             """
             if len(X_tr) < d + 1:                  # 資料不足，找鄰近點
                 X_tr, y_tr = DB.nearest_point(xbest, max(d + 1, 2 * d))"""
-            model = RBF().fit(X_tr, y_tr)
+            model_rbf = RBF().fit(X_tr, y_tr)
+            model_gp = GP().fit(X_tr, y_tr)
             
             #代理評估
-            xc = self.de_minimize(model, tr_lb, tr_ub)
+            xc = self.de_minimize(model_gp, tr_lb, tr_ub)
             xc = self.clip(xc)
             
             #真實評估
@@ -95,8 +97,8 @@ class TRLS_Strategy(Strategy):
             y_pool = np.append(y_pool, yc)
             
             #信賴比
-            pred_best = float(np.asarray(model.predict(xbest)).ravel()[0])
-            pred_c = float(np.asarray(model.predict(xc)).ravel()[0])
+            pred_best = float(np.asarray(model_gp.predict(xbest)).ravel()[0])
+            pred_c = float(np.asarray(model_gp.predict(xc)).ravel()[0])
             denom = pred_best - pred_c
             if abs(denom) > self.eps_denom:
                 rho = (f_best - yc) / denom 
