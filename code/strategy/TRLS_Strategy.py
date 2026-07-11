@@ -25,7 +25,7 @@ kmax = 3, k = 0
 class TRLS_Strategy(Strategy):
     def __init__(self, lb, ub, rng, m=100, kmax=3, xi=2.0,
                     pop_size=50, generations=50, F=0.5, Cr=0.9,
-                    eps_denom=1e-12, poly_tail_min_ratio=3.0):
+                    eps_denom=1e-12, poly_tail_min_ratio=1.5):
             super().__init__(lb, ub, rng)
             self.m = m                    # 外層盒資料量 (100)
             self.kmax = kmax              # 信賴域迭代次數 = 消耗 FE 数 (3)

@@ -23,7 +23,7 @@ def distance(x1, x2):
 # d 為 問題參數dim , N 為 訓練資料筆數
 class RBF():
     def __init__(self, beta_candidates=None, lam_candidates=None, use_poly_tail=True,
-                 poly_tail_min_ratio=3.0):
+                 poly_tail_min_ratio=1.5):
         """
         beta_candidates : shape parameter 候選倍率(乘上 Dmax_normalized)，用 LOOCV 挑最佳
         lam_candidates  : Tikhonov 正則化係數候選，用 LOOCV 挑最佳
@@ -186,16 +186,25 @@ class RBF():
 
         d2 = distance(X, X)
         Dmax = float(np.sqrt(d2.max())) if d2.max() > 0 else 1.0
-
-        # 測試所以候選
-        best_beta, best_lam, best_err = None, None, np.inf
+        
+        #由於現在效率太慢 嘗試改成先用中間值lambda找最佳beta 再固定beta找最佳lambda
+        prob_lam = self.lam_candidates[len(self.lam_candidates) // 2]
+        
+        best_beta, best_err = None, np.inf
         for beta_ratio in self.beta_candidates:
             beta = max(Dmax * beta_ratio, 1e-6)
             Phi = self.create_Phi(d2, beta)
+            err = self._loocv_rmse(Phi, y_scaled, prob_lam, d, N, self.poly_tail_active)
+            if err < best_err:
+                best_err, best_beta = err, beta
+        
+        best_lam = prob_lam
+        if best_beta is not None:
+            Phi = self.create_Phi(d2, best_beta)
             for lam in self.lam_candidates:
                 err = self._loocv_rmse(Phi, y_scaled, lam, d, N, self.poly_tail_active)
                 if err < best_err:
-                    best_err, best_beta, best_lam = err, beta, lam
+                    best_err, best_lam = err, lam
 
         # 假如候選解都不合適 退回原版RBF
         if self.poly_tail_active and not np.isfinite(best_err):

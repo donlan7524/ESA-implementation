@@ -9,7 +9,7 @@ class crossover_strategy(Strategy):
     
     '''
 
-    def __init__(self, lb, ub, rng, m=None, poly_tail_min_ratio=3.0):
+    def __init__(self, lb, ub, rng, m=None, poly_tail_min_ratio=1.5):
         '''
         Args:
             m: int, the number of candidate solutions to generate

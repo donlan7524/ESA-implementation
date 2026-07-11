@@ -13,7 +13,7 @@ class SLS_Strategy(Strategy):
     4. 透過 JADE 尋找最佳解
     5. 實際計算最佳解 fitness
     """
-    def __init__(self, lb, ub, rng, l_best=None, pop_size=10, generations=150, F=(0.5,1), Cr=0.7, min_ratio=1e-15, poly_tail_min_ratio=3.0):
+    def __init__(self, lb, ub, rng, l_best=None, pop_size=10, generations=150, F=(0.5,1), Cr=0.7, min_ratio=1e-15, poly_tail_min_ratio=1.5):
         super().__init__(lb, ub, rng)
         d = len(lb)
         
