@@ -13,11 +13,13 @@ class SLS_Strategy(Strategy):
     4. 透過 JADE 尋找最佳解
     5. 實際計算最佳解 fitness
     """
-    def __init__(self, lb, ub, rng, l_best=None, pop_size=10, generations=150, F=(0.5,1), Cr=0.7, min_ratio=1e-15):
+    def __init__(self, lb, ub, rng, l_best=None, pop_size=10, generations=150, F=(0.5,1), Cr=0.7, min_ratio=1e-15, poly_tail_min_ratio=1.5):
         super().__init__(lb, ub, rng)
         d = len(lb)
         
-        self.l_best = l_best if l_best is not None else min(25 + d, 60)
+        min_required = int(np.ceil(poly_tail_min_ratio * (2 * d + 1))) + 10
+        self.l_best = l_best if l_best is not None else max(25 + d, min_required)
+        #self.l_best = l_best if l_best is not None else min(25 + d, 60)
         self.pop_size = pop_size
         self.generations = generations
         self.F = F
@@ -32,12 +34,7 @@ class SLS_Strategy(Strategy):
         step 1 and 2 
         """
         xl, yl = DB.get_nbest(min(self.l_best, len(DB)))
-        self.x_min = np.min(xl, axis=0)
-        x_max = np.max(xl, axis=0)
-        
-        self.x_range = np.where(x_max - self.x_min == 0, 1e-8, x_max - self.x_min)
-        xl_norm = (xl - self.x_min) / self.x_range
-        model = RBF().fit(xl_norm,yl)
+        model = RBF().fit(xl,yl)
         
         """
         step 3 : 
@@ -60,8 +57,8 @@ class SLS_Strategy(Strategy):
         global_width = self.ub - self.lb
         margin = ub_local - lb_local
         margin = np.maximum(margin, 0.05*global_width)
-        lb_local = np.maximum(lb_local - 0.5 * margin, self.lb)
-        ub_local = np.minimum(ub_local + 0.5 * margin, self.ub)
+        lb_local = np.maximum(lb_local - margin, self.lb)
+        ub_local = np.minimum(ub_local + margin, self.ub)
         min_width = global_width * self.min_ratio
         
         for i in range(len(lb_local)):

@@ -38,7 +38,7 @@ Benchmarks_config = {
 def run_experiment(func_name, dim, seed):
     try:
         #設定初始參數
-        MaxFEs = 1000
+        MaxFEs = int(os.environ.get("ESA_MAX_FES", 1000))
         init_samples = 150 if dim == 100 else 100
         rng = np.random.default_rng(seed)
         

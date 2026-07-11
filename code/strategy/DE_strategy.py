@@ -4,12 +4,16 @@ from RBF import  RBF
 
 
 class DE_Strategy(Strategy):
-    def __init__(self, lb, ub, rng, n=50, g_max=300, F=0.5, Cr=0.9):
+    def __init__(self, lb, ub, rng, n=50, g_max=300, F=0.5, Cr=0.9, beta_candidates=None, lam_candidates=None):
         super().__init__(lb, ub, rng)  
         self.n = n                       # 族群/候選數
         self.g_max = g_max               # 全域模型資料上限
         self.F = F                       # DE 縮放因子
         self.Cr = Cr    
+        self.beta_candidates = beta_candidates if beta_candidates is not None \
+            else np.array([0.1, 0.3, 0.7, 1.5])
+        self.lam_candidates = lam_candidates if lam_candidates is not None \
+            else np.array([1e-8, 1e-4])
         
     def strategy(self,DB,f) :
         '''
@@ -31,12 +35,7 @@ class DE_Strategy(Strategy):
         #建立全域代理
         g = max(min(len(DB), self.g_max), DB.d + 1)
         Xg, yg = DB.get_nbest(min(g, len(DB)))
-        self.x_min = np.min(Xg, axis=0)
-        x_max = np.max(Xg, axis=0)
-        
-        self.x_range = np.where(x_max - self.x_min == 0, 1e-8, x_max - self.x_min)
-        xg_norm = (Xg - self.x_min) / self.x_range
-        model = RBF().fit(xg_norm,yg)
+        model = RBF(beta_candidates=self.beta_candidates, lam_candidates=self.lam_candidates).fit(Xg,yg)
         
         #產生突變及交配
         trials = self.gen_next(P)

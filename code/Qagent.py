@@ -16,7 +16,7 @@ class Qlearning:
         self.qtable = np.full((8, 4), 0.25)
 
     def get_initial_qtable(self):
-        return self.rng.choice([0,2,4,])
+        return self.rng.choice([0,2,4,6])
 
     def select_action(self, state):
         '''

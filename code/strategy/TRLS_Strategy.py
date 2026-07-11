@@ -25,7 +25,7 @@ kmax = 3, k = 0
 class TRLS_Strategy(Strategy):
     def __init__(self, lb, ub, rng, m=100, kmax=3, xi=2.0,
                     pop_size=50, generations=50, F=0.5, Cr=0.9,
-                    eps_denom=1e-12):
+                    eps_denom=1e-12, poly_tail_min_ratio=1.5):
             super().__init__(lb, ub, rng)
             self.m = m                    # 外層盒資料量 (100)
             self.kmax = kmax              # 信賴域迭代次數 = 消耗 FE 数 (3)
@@ -35,6 +35,7 @@ class TRLS_Strategy(Strategy):
             self.F = F
             self.Cr = Cr
             self.eps_denom = eps_denom    # ρ 分母保護閥值
+            self.poly_tail_min_ratio = poly_tail_min_ratio
         
     def strategy(self, DB, f):   
         d = DB.d
@@ -43,7 +44,7 @@ class TRLS_Strategy(Strategy):
         Xm,ym = DB.get_nbest(min(self.m,len(DB)))
         global_width = self.ub - self.lb
         margin = Xm.max(axis=0) - Xm.min(axis=0)
-        margin = np.maximum(margin, 0.05*global_width)
+        margin = np.maximum(margin, 1e-5*global_width)
 
         lb_outer = np.maximum(Xm.min(axis=0) - 0.5 * margin, self.lb)
         ub_outer = np.minimum(Xm.max(axis=0) + 0.5 * margin, self.ub)
@@ -74,8 +75,13 @@ class TRLS_Strategy(Strategy):
             #信賴域內的RBF
             in_tr = np.all((X_pool >= tr_lb) & (X_pool <= tr_ub), axis=1)
             X_tr, y_tr = X_pool[in_tr], y_pool[in_tr]
+            
+            min_required = int(np.ceil(self.poly_tail_min_ratio * (2 * d + 1))) + 10
+            if len(X_tr) < min_required:            # 資料不足(含只達到 d+1 的邊緣情況)，找鄰近點補足
+                X_tr, y_tr = DB.nearest_point(xbest, max(min_required, 2 * d))
+            """
             if len(X_tr) < d + 1:                  # 資料不足，找鄰近點
-                X_tr, y_tr = DB.nearest_point(xbest, max(d + 1, 2 * d))
+                X_tr, y_tr = DB.nearest_point(xbest, max(d + 1, 2 * d))"""
             model = RBF().fit(X_tr, y_tr)
             
             #代理評估
