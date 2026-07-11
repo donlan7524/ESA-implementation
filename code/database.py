@@ -3,13 +3,14 @@ from scipy.stats import qmc
 
 class Database:
 
-    def __init__(self, d, bounds, initial_capacity=1000):
+    def __init__(self, d, bounds, rng, initial_capacity=1000):
         self.d = d
         self.bounds = bounds
         self.capacity = initial_capacity
         self.size = 0
         self.X = np.empty((self.capacity, self.d))
         self.y = np.empty(self.capacity)
+        self.rng = rng
 
     def lhs(self, n_samples, real_fitness_func):
         '''

@@ -1,7 +1,10 @@
 import numpy as np
 from strategy.base_Strategy import Strategy
 from scipy.optimize import minimize
-from RBF import RBF
+from RBF_improved import RBF_improved
+from RBF_surrogate import RBF
+
+#實測後以棄用 將其取代a2後收斂效果不如預期
 
 class LBFGS_Strategy(Strategy):
     """
@@ -23,7 +26,7 @@ class LBFGS_Strategy(Strategy):
         """
         x0, f_best = DB.getbest()
         x_local, y_local = DB.nearest_point(x0, self.l_best)
-        model = RBF().fit(x_local,y_local)
+        model = RBF_improved().fit(x_local,y_local)
         global_width = self.ub - self.lb
         
         def surrogate_objective(x):

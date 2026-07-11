@@ -1,8 +1,11 @@
 import numpy as np
 from strategy.base_Strategy import Strategy
 from scipy.optimize import differential_evolution
-from RBF import RBF
+from RBF_surrogate import RBF
 from GP_surrogate import GP
+from RBF_improved import RBF_improved
+
+key = 2 # key = 0 時為RBF key = 1 時為GP key = 2 時為RBF_improved
 
 class SLS_Strategy(Strategy):
     """
@@ -19,8 +22,10 @@ class SLS_Strategy(Strategy):
         d = len(lb)
         
         min_required = int(np.ceil(poly_tail_min_ratio * (2 * d + 1))) + 10
-        self.l_best = l_best if l_best is not None else max(25 + d, min_required)
-        #self.l_best = l_best if l_best is not None else min(25 + d, 60)
+        if key==2:
+            self.l_best = l_best if l_best is not None else max(25 + d, min_required)
+        else:
+            self.l_best = l_best if l_best is not None else min(25 + d, 60)
         self.pop_size = pop_size
         self.generations = generations
         self.F = F
@@ -35,8 +40,12 @@ class SLS_Strategy(Strategy):
         step 1 and 2 
         """
         xl, yl = DB.get_nbest(min(self.l_best, len(DB)))
-        model_rbf = RBF().fit(xl,yl)
-        model_gp = GP().fit(xl,yl)
+        
+        models = [RBF().fit(xl,yl),
+                  GP().fit(xl,yl),
+                  RBF_improved().fit(xl,yl)]
+        
+        model = models[key]
         
         """
         step 3 : 
@@ -48,7 +57,7 @@ class SLS_Strategy(Strategy):
         """
         step 4: 使用 JADE 
         """
-        xc = self.jade_minimize(model_gp, lb_local, ub_local)
+        xc = self.jade_minimize(model, lb_local, ub_local)
         D_new = [(xc, float(f(xc)))]
         return D_new
     

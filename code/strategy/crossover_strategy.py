@@ -1,8 +1,11 @@
 import numpy as np
 
 from strategy.base_Strategy import Strategy
-from RBF import RBF
+from RBF_surrogate import RBF
 from GP_surrogate import GP
+from RBF_improved import RBF_improved
+
+key = 2 # key = 0 時為RBF key = 1 時為GP key = 2 時為RBF_improved
 
 # a3
 class crossover_strategy(Strategy):
@@ -36,8 +39,10 @@ class crossover_strategy(Strategy):
         P,Y_P = DB.get_nbest(self.m)
         m_actual, d = P.shape
 
-        model_rbf = RBF().fit(P,Y_P)
-        model_GP = GP().fit(P,Y_P)
+        models = [RBF().fit(P,Y_P),
+                  GP().fit(P,Y_P),
+                  RBF_improved().fit(P,Y_P)]
+        model = models[key]
         
         phi = self.rng.permutation(d)
         x_best = np.copy(P[0])
@@ -46,7 +51,7 @@ class crossover_strategy(Strategy):
         for i in phi:
             P_t = np.tile(x_best, (m_actual, 1))
             P_t[:, i] = P[:, i]       # replace the i-th dimension with the values from the best solutions
-            pred = model_GP.predict(P_t) 
+            pred = model.predict(P_t) 
 
             best_index = np.argmin(pred)
             x_best[i] = P_t[best_index, i]

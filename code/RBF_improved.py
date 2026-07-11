@@ -21,7 +21,7 @@ def distance(x1, x2):
 # RBF (含線性多項式尾項) => 擬合非線性問題，用來預測昂貴目標函數 fitness
 # {xi,yi} : x為解題參數之列表([[]]),y為fl(x)評估之分數列表([])
 # d 為 問題參數dim , N 為 訓練資料筆數
-class RBF():
+class RBF_improved():
     def __init__(self, beta_candidates=None, lam_candidates=None, use_poly_tail=True,
                  poly_tail_min_ratio=1.5):
         """
@@ -59,9 +59,7 @@ class RBF():
     def _poly_features(self, X):
         """
         多項式尾項特徵: [1, x_1..x_d, x_1^2..x_d^2]
-        只加對角線二次項(不含交叉項 x_i*x_j)，維持 O(d) 而非 O(d^2) 參數量，
-        同時已足以完美表達 Ellipsoid 這類「各維度獨立平方相加」的曲面，
-        純線性尾項(無平方項)完全無法表達曲率，是先前版本在這類問題上失準的根本原因。
+        純線性尾項(無平方項)完全無法表達曲率  因此加入對角線二次項(不含交叉項 x_i*x_j)
         """
         return np.hstack([np.ones((X.shape[0], 1)), X, X ** 2])
  
@@ -75,7 +73,7 @@ class RBF():
         [ P^T   0 ] [c] = [0]
         其中 P = [1, x] (常數項 + 線性項)，並施加正交條件 sum(w)=0, sum(w*x)=0
         """
-        P = self._poly_features(self.X)                   # N x (2d+1)
+        P = self._poly_features(self.X)      # N x (2d+1)
         pd = self._poly_dim(d)
         top = np.hstack([Phi, P])
         bottom = np.hstack([P.T, np.zeros((pd, pd))])
@@ -85,7 +83,7 @@ class RBF():
     def _safe_solve_sym(self, A, rhs):
         """
         求解對稱(但非正定，saddle-point結構)的增廣系統，
-        並偵測 LinAlgWarning(病態矩陣)；一旦偵測到，回傳 None 讓呼叫端知道要降級處理，
+        假如偵測 LinAlgWarning(病態矩陣)；一旦偵測到，回傳 None 讓呼叫端知道要降級處理，
         而不是靜默吃下一個不可靠的解。
         """
         with warnings.catch_warnings(record=True) as caught:

@@ -1,9 +1,11 @@
 import numpy as np
 from strategy.base_Strategy import Strategy
 from scipy.spatial.distance import cdist
-from RBF import  RBF
+from RBF_surrogate import  RBF
 from GP_surrogate import GP
+from RBF_improved import RBF_improved
 
+key = 2 # key = 0 時為RBF key = 1 時為GP key = 2 時為RBF_improved
 
 class DE_Strategy(Strategy):
     def __init__(self, lb, ub, rng, n=50, g_max=300, F=0.5, Cr=0.9, beta_candidates=None, lam_candidates=None):
@@ -38,8 +40,11 @@ class DE_Strategy(Strategy):
         g = max(min(len(DB), self.g_max), DB.d + 1)
         Xg, yg = DB.get_nbest(min(g, len(DB)))
         
-        model_rbf = RBF(beta_candidates=self.beta_candidates, lam_candidates=self.lam_candidates).fit(Xg,yg)
-        model_gp = GP().fit(Xg,yg)
+        
+        models = [RBF().fit(Xg,yg),
+                  GP().fit(Xg,yg),
+                  RBF_improved(beta_candidates=self.beta_candidates, lam_candidates=self.lam_candidates).fit(Xg,yg)]
+        model = models[key]
         
         #產生突變及交配
         trials = self.gen_next(P)
@@ -49,7 +54,7 @@ class DE_Strategy(Strategy):
         dists = cdist(trials, Xg)
         
         #找出模擬分數最高子代
-        pred = model_gp.predict(trials)
+        pred = model.predict(trials)
         
         min_dists = np.min(dists, axis=1)
         

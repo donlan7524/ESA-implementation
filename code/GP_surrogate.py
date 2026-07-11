@@ -37,8 +37,17 @@ class GP:
         
         # 檢查過濾後資料是否太少
         if len(x) < 2:
-            raise ValueError("過濾重複點後資料不足以建立模型")
-        
+            noise = np.random.normal(0, 1e-8, size=x.shape)
+            x_norm_jitter = x + noise
+            # 確保不會再有重複
+            x, unique_idx = np.unique(x_norm_jitter, axis=0, return_index=True)
+            y = y[unique_idx]
+            
+        if len(x) < 2:
+            # 如果真的還是小於2，強行複製一個點並微調
+            x = np.vstack([x, x[0] + 1e-8])
+            y = np.append(y, y[0])
+            
         # 標準化
         self.x_mean = x.mean(axis=0)
         self.x_std = x.std(axis=0) + 1e-8

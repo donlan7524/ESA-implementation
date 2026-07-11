@@ -21,7 +21,7 @@ from strategy.DE_strategy import DE_Strategy
 from strategy.SLS_strategy import SLS_Strategy
 from strategy.TRLS_Strategy import TRLS_Strategy
 from strategy.crossover_strategy import crossover_strategy
-from strategy.LBFGS_Strategy import LBFGS_Strategy
+
 
 
 #定義每個要做的實驗種類
@@ -53,7 +53,7 @@ def run_experiment(func_name, dim, seed):
         bounds = np.array([[lb_val,ub_val]]*dim)
 
         #初始化資料庫
-        DB = Database(dim, bounds)
+        DB = Database(dim, bounds, rng)
         fes = DB.lhs(init_samples, objective_func)
         global_best_x, global_best_y = DB.getbest()
         global_best_y = float(global_best_y)
@@ -62,8 +62,7 @@ def run_experiment(func_name, dim, seed):
         strategies = [  DE_Strategy(lb = bounds[:, 0], ub = bounds[:, 1], rng = rng), 
                         SLS_Strategy(lb = bounds[:, 0], ub = bounds[:, 1], rng = rng),
                         crossover_strategy(lb = bounds[:, 0], ub = bounds[:, 1], rng = rng) ,
-                        TRLS_Strategy(lb = bounds[:, 0], ub = bounds[:, 1], rng = rng),
-                        LBFGS_Strategy(lb = bounds[:, 0], ub = bounds[:, 1], rng = rng)]
+                        TRLS_Strategy(lb = bounds[:, 0], ub = bounds[:, 1], rng = rng),]
 
         # 導入Qlearning agent
         Agent = Qlearning(alpha=0.1, gamma=0.9, T=1.0, rng=rng)
@@ -72,7 +71,7 @@ def run_experiment(func_name, dim, seed):
         action_count = np.zeros(len(strategies), dtype=int)   # 統計各策略被選次數
         success_count = np.zeros(len(strategies), dtype=int)
         history = [global_best_y] * fes
-        history_improvements = {0: [], 1: [], 2: [], 3: [], 4: []}
+        history_improvements = {0: [], 1: [], 2: [], 3: []}
         
         stagnation_counter = 0
         stagnation_limit = 20
@@ -80,6 +79,8 @@ def run_experiment(func_name, dim, seed):
         while fes < MaxFEs: 
             #透過current_state決定下個動作
             action = Agent.select_action(current_state)
+            
+            #假如過久沒有進步 直接變成呼叫a1
             if stagnation_counter >= stagnation_limit:
                 action = 0
                 stagnation_counter = 0
@@ -141,15 +142,16 @@ def run_experiment(func_name, dim, seed):
 
 if __name__ == '__main__':
     funcs_to_test = ['Ellipsoid', 'Rosenbrock', 'Ackley', 'Griewank', 'SRR', 'RHC1', 'RHC2'] 
-    dims_to_test = [30]
-    runs_per_dim = 1 # 論文設定每組跑 20 次
+    dims_to_test = [30, 50, 100]
+    runs_per_dim = 1 # 設定每組跑 10 次
     
     task = []
     for func in funcs_to_test:
         for dim in dims_to_test:
+            """
             if dim == 100 and Benchmarks_config[func]['is_cec']:
                 print(f"⚠️ 跳過 {func}-100D，因為 opfunu 套件不支援此維度。")
-                continue
+                continue"""
             for run in range(runs_per_dim):
                 task.append((func,dim,run))
     total_task = len(task)
@@ -183,9 +185,18 @@ if __name__ == '__main__':
         df = pd.DataFrame(result)
         
         timestamp = time.strftime("%Y%m%d_%H%M%S")
-        filename = f"esa_benchmark_results_{timestamp}.csv"
+        raw_filename = f"ESA_benchmark_results_{timestamp}.csv"
+        df.to_csv(raw_filename, index=False, encoding='utf-8-sig', float_format='%.4e')
+        print(f"原始各項數據已存至：{raw_filename}")
         
-        df.to_csv(filename, index=False, encoding='utf-8-sig', float_format='%.4e')
-        print(f"📊 實驗結果已成功儲存至：{filename}")
+        df_summary = df.groupby(['func','dim'])['best_y'].agg(['mean','std']).reset_index()
+        df_summary = df_summary.rename(columns={'mean': 'best_y_mean', 'std': 'best_y_std'})
+        
+        summary_file = f"ESA_benchmark_summary_{timestamp}.csv"
+        df_summary.to_csv(summary_file, index=False, encoding='utf-8-sig', float_format='%.4e')
+        
+        print(f"摘要以儲存至:{summary_file}")
+        print("\n--- 實驗統計摘要 ---")
+        print(df_summary.to_string(index=False, formatters={'best_y_mean': '{:,.4e}'.format, 'best_y_std': '{:,.4e}'.format}))
     else:
         print("⚠️ 沒有產生任何結果，跳過 CSV 匯出。")
