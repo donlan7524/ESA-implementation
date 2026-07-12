@@ -30,6 +30,12 @@ ESA-implementation/
 ├── results.csv
 ├── experiment_logs/
 ├── experiment result and analysis/
+│   ├── images/
+│   │   ├── esa_result.png
+│   │   ├── esa_qtable.png
+│   │   ├── a5.png
+│   │   └── ...
+│   ├── 實驗結果.md
 │   ├── 優化方向總覽.md
 │   ├── 放棄的優化總覽.md
 │   ├── RBF_hpo評估報告.md
@@ -142,6 +148,7 @@ run_progressive_experiments(
 
 | 文件 | 內容摘要 |
 | :--- | :--- |
+| [實驗結果.md](<experiment%20result%20and%20analysis/實驗結果.md>) | 實驗表格 |
 | [優化方向總覽.md](experiment%20result%20and%20analysis/優化方向總覽.md) | 所有嘗試過的改動方向與當前採用狀態整理 |
 | [放棄的優化總覽.md](experiment%20result%20and%20analysis/放棄的優化總覽.md) | 放棄的 5 項延伸：詳細動機、數據、放棄原因 |
 | [RBF_hpo評估報告.md](experiment%20result%20and%20analysis/RBF_hpo評估報告.md) | RBF-HPO 作為主力模型的評估結果 |
