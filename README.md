@@ -25,20 +25,31 @@ ESA核心想法是：在每一run中，由一個Agent根據當前的搜尋狀態
 ESA-implementation/
 ├── README.md
 ├── requirements.txt
-├── main.py                   
-├── experiment.py            
+├── main.py
+├── experiment.py
+├── results.csv
+├── experiment_logs/
+├── experiment result and analysis/
+│   ├── 優化方向總覽.md
+│   ├── 放棄的優化總覽.md
+│   ├── RBF_hpo評估報告.md
+│   ├── SLS 與 L-BFGS 策略比較.md
+│   ├── TS_UCB_10seed完整矩陣報告.md
+│   ├── 多群體策略失敗分析報告.md
+│   ├── 馬氏距離實驗報告.md
+│   └── ESA_收斂曲線.pdf
 └── code/
-    ├── RBF.py                
-    ├── RBF_simple.py         
-    ├── RBF_hpo.py            
-    ├── KNN_surrogate.py      
-    ├── MLP_hpo.py            
-    ├── GP_surrogate.py      
-    ├── Qagent.py            
-    ├── TSagent.py           
-    ├── UCBagent.py           
-    ├── database.py          
-    ├── kmeans.py             
+    ├── RBF.py
+    ├── RBF_simple.py
+    ├── RBF_hpo.py
+    ├── KNN_surrogate.py
+    ├── MLP_hpo.py
+    ├── GP_surrogate.py
+    ├── Qagent.py
+    ├── TSagent.py
+    ├── UCBagent.py
+    ├── database.py
+    ├── kmeans.py
     ├── brenchmarks/
     │   ├── __init__.py
     │   └── functions.py
@@ -125,3 +136,17 @@ run_progressive_experiments(
 
 ---
 
+## 說明文件導覽
+
+所有實驗分析報告位於 `experiment result and analysis/` 目錄下：
+
+| 文件 | 內容摘要 |
+| :--- | :--- |
+| [優化方向總覽.md](experiment%20result%20and%20analysis/優化方向總覽.md) | 所有嘗試過的改動方向與當前採用狀態整理 |
+| [放棄的優化總覽.md](experiment%20result%20and%20analysis/放棄的優化總覽.md) | 放棄的 5 項延伸：詳細動機、數據、放棄原因 |
+| [RBF_hpo評估報告.md](experiment%20result%20and%20analysis/RBF_hpo評估報告.md) | RBF-HPO 作為主力模型的評估結果 |
+| [SLS 與 L-BFGS 策略比較.md](<experiment%20result%20and%20analysis/SLS%20與%20L-BFGS%20策略比較.md>) | a2（SLS）vs a5（L-BFGS）策略替換實驗 |
+| [TS_UCB_10seed完整矩陣報告.md](experiment%20result%20and%20analysis/TS_UCB_10seed完整矩陣報告.md) | Thompson Sampling / UCB1 與 Q-learning 橫向比較 |
+| [多群體策略失敗分析報告.md](experiment%20result%20and%20analysis/多群體策略失敗分析報告.md) | MultiPop 三版迭代的失敗分析 |
+| [馬氏距離實驗報告.md](experiment%20result%20and%20analysis/馬氏距離實驗報告.md) | 馬氏距離 RBF 的實驗結果 |
+| [ESA_收斂曲線.pdf](experiment%20result%20and%20analysis/ESA_收斂曲線.pdf) | 各配置的收斂曲線圖 |
