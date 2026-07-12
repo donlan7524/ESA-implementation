@@ -80,7 +80,7 @@
 ### RBF-HPO 代理模型 (`code/RBF_hpo.py`)
 
 - 超參數自動調優 (Rippa 演算法)
-  - 核心基底函數（RBF）採用高斯核：$\phi(r) = \exp(-\beta r^2)$。
+  - 核心基底函數（RBF）採用高斯核： $\phi(r) = \exp(-\beta r^2)$ 。
   - 實作 Rippa 演算法，利用留一交叉驗證誤差公式，在一維對數網格中自動搜尋最佳的核寬度 $\beta$ 與嶺正則化係數 $\lambda$。
 
 - Quadratic Polynomial Tail
