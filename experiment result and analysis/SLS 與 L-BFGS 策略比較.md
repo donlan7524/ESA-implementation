@@ -33,9 +33,7 @@ RBF的預測模型可能出現
 ---
 ### 原因2: L-BFGS 使用的是代理模型梯度，而不是真實函數梯度
 估計梯度所使用的方式為有限差分估計梯度:
-$$  
-\frac{\partial \hat{f}(x)}{\partial x_j} \approx \frac{\hat{f}(x + \epsilon e_j) - \hat{f}(x)}{\epsilon}
-$$  
+$$\frac{\partial \hat{f}(x)}{\partial x\_j} \approx \frac{\hat{f}(x + \epsilon e\_j) - \hat{f}(x)}{\epsilon}$$ 
 當兩個預測點極度接近時會導致預測值產生以下可能問題
 - 接近零
 - 正負方向錯誤
