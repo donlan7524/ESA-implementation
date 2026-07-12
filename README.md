@@ -107,7 +107,7 @@ ESA-implementation/
 
 ### Q-learning 狀態設計
 
-- 狀態空間：$2 \times n\_actions$ 個狀態
+• 狀態空間：2 &times; n<sub>actions</sub> 個狀態
   - 狀態轉移：`next_state = action × 2 + (1 if 改善成功 else 0)`
 - 獎勵設計：成功改善 global best → `reward = 1 / n_evals`；否則 → 0
 
