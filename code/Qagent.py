@@ -2,7 +2,7 @@ import numpy as np
 
 class Qlearning:
 
-    def __init__(self, alpha=0.1, gamma=0.9, T=1.0, rng=None):
+    def __init__(self, alpha=0.1, gamma=0.9, T=1.0, rng=None, n_actions=4):
         '''
         Args:
         
@@ -13,23 +13,24 @@ class Qlearning:
         self.T = T
         self.rng = rng if rng is not None else np.random.default_rng()
 
-        self.qtable = np.full((8, 4), 0.25)
+        self.qtable = np.full((n_actions * 2, n_actions), 1.0 / n_actions)
 
     def get_initial_qtable(self):
-        return self.rng.choice([0,2,4,6])
+        n_actions = self.qtable.shape[1]
+        return self.rng.choice([i * 2 for i in range(n_actions)])
 
     def select_action(self, state):
         '''
         Args:
-            state (int): current state index (0 to 7)
+            state (int): current state index
         Returns:
-            action (int): selected action index (0 to 3)
+            action (int): selected action index
         '''
         q_values = self.qtable[state]
         # Subtract max for numerical stability to prevent overflow
         exp_q = np.exp((q_values - np.max(q_values)) / self.T)
         probs = exp_q / np.sum(exp_q)
-        return self.rng.choice(4, p=probs)
+        return self.rng.choice(len(q_values), p=probs)
     
     def q_update(self, state, action, reward, next_state):
         '''

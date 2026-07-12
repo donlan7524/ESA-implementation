@@ -17,6 +17,7 @@ ESA-implementation/
 │   ├── RBF_simple.py
 │   ├── KNN_surrogate.py
 │   ├── MLP_hpo.py
+│   ├── GP_surrogate.py
 │   ├── Qagent.py
 │   ├── TSagent.py
 │   ├── UCBagent.py
@@ -48,6 +49,9 @@ ESA-implementation/
     - `hpo` -> `RBF_hpo.RBF`
     - `clustered_knn` -> `KNN_surrogate.ClusteredKNN`
     - `mlp` -> `MLP_hpo.MLP_HPO`
+    - `gp` -> `GP_surrogate.GP`
+- `code/GP_surrogate.py`
+  - Gaussian Process (高斯過程) 代理模型
 - `code/Qagent.py`
   - Q-learning agent 的實作
 - `code/TSagent.py`

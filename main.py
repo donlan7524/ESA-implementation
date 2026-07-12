@@ -1,4 +1,12 @@
 import os
+import sys
+
+# 將 code 目錄加入 Python 尋找模組的路徑中，確保移動至根目錄後執行不出錯
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), 'code')))
+
+# 確保 Windows 終端機能正確處理 UTF-8 字元輸出，避免 CP950 編碼出錯
+sys.stdout.reconfigure(encoding='utf-8')
+
 # ⚠️ 效能關鍵：必須在 import numpy 之前設定，關閉底層的自動多執行緒，
 # 避免多進程同時呼叫 numpy 時引發嚴重的 CPU 執行緒衝突 (Thread Thrashing)
 os.environ['OMP_NUM_THREADS'] = '1'
@@ -13,7 +21,6 @@ import concurrent.futures
 import time
 import pandas as pd
 import json
-import os
 
 from Qagent import Qlearning
 from database import Database
@@ -51,7 +58,7 @@ def run_experiment(func_name, dim, seed):
         #設定上下界
         lb_val, ub_val = config['domain']
         bounds = np.array([[lb_val,ub_val]]*dim)
-
+ 
         #初始化資料庫
         DB = Database(dim, bounds)
         fes = DB.lhs(init_samples, objective_func)
@@ -66,7 +73,7 @@ def run_experiment(func_name, dim, seed):
                         LBFGS_Strategy(lb = bounds[:, 0], ub = bounds[:, 1], rng = rng)]
 
         # 導入Qlearning agent
-        Agent = Qlearning(alpha=0.1, gamma=0.9, T=1.0, rng=rng)
+        Agent = Qlearning(alpha=0.1, gamma=0.9, T=1.0, rng=rng, n_actions=len(strategies))
         current_state = Agent.get_initial_qtable()
 
         action_count = np.zeros(len(strategies), dtype=int)   # 統計各策略被選次數

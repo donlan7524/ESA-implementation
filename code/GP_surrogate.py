@@ -2,7 +2,7 @@ import numpy as np
 import scipy.linalg as spla
 
 class GP:
-    def __init__(self, length_score=1.0, signal_var=1.0, noise_var=1e-4):
+    def __init__(self, length_score=1.0, signal_var=1.0, noise_var=1e-4, *args, **kwargs):
         self.l = length_score
         self.signal_var = signal_var
         self.noise_var = noise_var

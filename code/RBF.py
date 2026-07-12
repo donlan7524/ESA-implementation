@@ -14,6 +14,9 @@ elif RBF_MODE == "clustered_knn":
 elif RBF_MODE == "mlp":
     from MLP_hpo import MLP_HPO as RBF
     from RBF_simple import distance as distance
+elif RBF_MODE == "gp":
+    from GP_surrogate import GP as RBF
+    from RBF_simple import distance as distance
 else:
     from RBF_simple import RBF as RBF
     from RBF_simple import distance as distance
